@@ -1,0 +1,32 @@
+---
+- name: Копирование файлов
+  hosts: demo
+  tasks:
+    - name: Копирование
+      block:
+        - name: Копирование nginx.conf
+          ansible.builtin.copy:
+            src: /home/alexadmin/nginx-demo/nginx.conf #путь к файлу на локальной машине
+            dest: /root/nginx.conf #путь к файлу на удаленной машине
+            owner: root #кто будет владельцем
+            group: sudo #группа которая будет владельцем
+        - name: Копирование index.html
+          ansible.builtin.copy:
+            src: /home/alexadmin/nginx-demo/index.html #путь к файлу на локальной машине
+            dest: /root/index.html #путь к файлу на удаленной машине
+            owner: root #кто будет владельцем
+            group: sudo #группа которая будет владельцем
+   
+    - name: Run Inginx
+      block:
+        - name: Run Docker Container
+          community.docker.docker_container:
+            name: nginx
+            image: nginx
+            detach: true
+            state: started
+            ports:
+            - "8081:80"
+            volumes:
+              - "/root/nginx.conf:/etc/nginx/conf.d/nginx.conf"
+              - "/root/index.html:/usr/share/nginx/html/index.html"
